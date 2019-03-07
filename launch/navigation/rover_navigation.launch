@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+
+<launch>
+<!--
+	<include file="$(find rover_ctrl_interface)/launch/slam/amcl.launch">
+	</include>
+-->
+	<include file="$(find rover_ctrl_interface)/launch/slam/move_base.launch">
+	</include>
+
+</launch>

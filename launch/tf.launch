@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+
+
+<launch>
+
+	<!--
+	<node pkg="tf" type="static_transform_publisher" name="base_footprint_IMU" args="0 0 0.164 -1.57 0 0 /base_footprint /Imu_link 100" />
+	
+	<node pkg="tf" type="static_transform_publisher" name="IMU_base_link" args="0 0 0 1.57 0 3.14 /Imu_link /base_link 100" />
+	-->
+	<node pkg="tf" type="static_transform_publisher" name="base_link_laser" args="0.4932 0 0.160 0 0 3.14 /base_footprint /base_scan 100" />
+
+
+</launch>
