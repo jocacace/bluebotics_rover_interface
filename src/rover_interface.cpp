@@ -90,7 +90,7 @@ void rover_ctrl_interface::rover_ctrl() {
   ros::Rate r( _ctrl_rate );
 
   float dt = 1.0/float(_ctrl_rate);
-  nav_msgs::Odometry odom;
+
   ros::Time current_time;
 
   if ( _rover->init() != 0 ) {
@@ -115,6 +115,7 @@ void rover_ctrl_interface::rover_ctrl() {
   tf::TransformBroadcaster odom_broadcaster;
   geometry_msgs::TransformStamped odom_trans;
   geometry_msgs::Quaternion odom_quat;
+	nav_msgs::Odometry odom;
 
   while( ros::ok() ) {
     
@@ -150,6 +151,24 @@ void rover_ctrl_interface::rover_ctrl() {
     odom_broadcaster.sendTransform(odom_trans);
     //---
 
+		odom.header.stamp = ros::Time::now();
+		odom.header.frame_id = "odom";
+		odom.child_frame_id = "base_footprint";
+		odom.pose.pose.position.x = x;
+		odom.pose.pose.position.y = y;
+		odom.pose.pose.position.z = 0.0;
+
+		odom.pose.pose.orientation.x = odom_quat.x;
+		odom.pose.pose.orientation.y = odom_quat.y;
+		odom.pose.pose.orientation.z = odom_quat.z;
+		odom.pose.pose.orientation.w = odom_quat.w;
+
+		odom.twist.twist.linear.x = vx;
+		odom.twist.twist.linear.y = vy;
+		odom.twist.twist.angular.z = vth;
+
+		_odom_pub.publish( odom );
+	
 		//cout << "vth: " << vth << endl;
 		//2cout << "Rover position: " << x << ", " << y << " / " << th << endl;
 
