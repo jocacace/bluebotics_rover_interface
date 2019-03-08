@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+
+<launch>
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization">
+    <rosparam command="load" file="$(find rover_ctrl_interface)/launch/navigation/conf/localization.yaml" />
+  </node>
+</launch>
