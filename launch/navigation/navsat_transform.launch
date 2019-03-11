@@ -1,14 +1,9 @@
 <?xml version="1.0" ?>
-
 <launch>
-  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization">
-    <rosparam command="load" file="$(find rover_ctrl_interface)/launch/navigation/conf/localization.yaml" />	
-  </node>
 
-
-	<!--
 	<node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" clear_params="true" output="screen">
     <rosparam command="load" file="$(find rover_ctrl_interface)/launch/navigation/conf/navsat_transform.yaml" />	
 	</node>
-	-->
+
+
 </launch>
