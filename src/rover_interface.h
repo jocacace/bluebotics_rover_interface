@@ -9,6 +9,7 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
 #include <sensor_msgs/Imu.h>
+#include <std_msgs/Float64.h>
 
 using namespace std;
 using namespace TooN;
@@ -31,6 +32,7 @@ class rover_ctrl_interface {
         ros::Publisher _bat_pub;
         ros::Publisher _odom_pub;
 				ros::Subscriber _imu_sub;
+				ros::Publisher _body_vel_pub;
 
         bool _mushroom_joy; // ;)
         bool _control_motors;

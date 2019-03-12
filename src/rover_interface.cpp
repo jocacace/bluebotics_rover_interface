@@ -69,9 +69,10 @@ rover_ctrl_interface::rover_ctrl_interface() {
   
   _cmd_vel_sub = _nh.subscribe("/rover/cmd_vel", 0, &rover_ctrl_interface::c_vel_cb, this );
   _joy_sub = _nh.subscribe("/joy", 0, &rover_ctrl_interface::rc_cb, this );
-  _odom_pub = _nh.advertise<nav_msgs::Odometry>("odom", 0);
+  //_odom_pub = _nh.advertise<nav_msgs::Odometry>("odom", 0);
   _bat_pub = _nh.advertise< std_msgs::Float32 > ("/rover/battery", 0);
 	_imu_sub = _nh.subscribe("/imu/data", 0, &rover_ctrl_interface::imu_cb, this);
+	_body_vel_pub = _nh.advertise<geometry_msgs::Twist>("/rover/body_vel", 0);
 	
   _lin_vel = 0.0;
   _ang_vel = 0.0;
@@ -95,12 +96,14 @@ void rover_ctrl_interface::c_vel_cb ( geometry_msgs::Twist c_vel ) {
 	
 }
 
+
 void rover_ctrl_interface::imu_cb ( const sensor_msgs::ImuConstPtr imu) {
 	//get yaw
 	//cout << YawFromMat( QuatToMat( makeVector(imu->orientation.w, imu->orientation.x, imu->orientation.y, imu->orientation.z ) ) ) << endl;
-	_imu_vth = (fabs(imu->angular_velocity.z) > 0.01) ? imu->angular_velocity.z : 0.0;
-	cout << "_imu_vth: " << _imu_vth << endl;
+	//_imu_vth = (fabs(imu->angular_velocity.z) > 0.01) ? imu->angular_velocity.z : 0.0;
+
 }
+
 
 void rover_ctrl_interface::rc_cb( sensor_msgs::Joy joy ) {
 
@@ -139,10 +142,11 @@ void rover_ctrl_interface::rover_ctrl() {
   vx = vy = 0.0;
   x = y = th = 0.0;
 
-  tf::TransformBroadcaster odom_broadcaster;
-  geometry_msgs::TransformStamped odom_trans;
-  geometry_msgs::Quaternion odom_quat;
-	nav_msgs::Odometry odom;
+  //tf::TransformBroadcaster odom_broadcaster;
+  //geometry_msgs::TransformStamped odom_trans;
+  //geometry_msgs::Quaternion odom_quat;
+	//nav_msgs::Odometry odom;
+	geometry_msgs::Twist bvel;
 
   while( ros::ok() ) {
     
@@ -154,12 +158,19 @@ void rover_ctrl_interface::rover_ctrl() {
       ROS_ERROR("Failed to read the rover speed");
       exit(0);
     }
+
+		bvel.linear.x = v;
+		bvel.angular.z = vth;
+
+		_body_vel_pub.publish( bvel );
+
 		
-		if( _rotation_from_imu ) vth = _imu_vth;
+		//if( _rotation_from_imu ) vth = _imu_vth;
     
     
     //---Odometry
-    th += vth* dt;
+    /*
+		th += vth* dt;
     
     vy = v * sin(th);    
     vx = v * cos(th);
@@ -196,7 +207,7 @@ void rover_ctrl_interface::rover_ctrl() {
 		odom.twist.twist.angular.z = vth;
 
 		_odom_pub.publish( odom );
-	
+		*/
 
 		
 		if ( _rover->readVoltage(EDIFrontRightTrack, timestamp, v_volt.data) != 0 ) {

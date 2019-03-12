@@ -6,10 +6,8 @@
 	<remap from="/rover/cmd_vel" to="/cmd_vel"  />
 	
 	<include file="$(find rover_ctrl_interface)/launch/tf.launch" />	
-	<!--
 	<include file="$(find rover_ctrl_interface)/launch/rover_sensors.launch" />
-	-->
-
+	
 	<!-- Joypad -->
 	<node name="joy" pkg="joy" type="joy_node" output="screen">
 		<param name="dev" type="string" value="/dev/input/js0"/>
@@ -29,7 +27,7 @@
 		<param name="max_lin_vel" value="0.5" type="double" />
 		<param name="max_ang_vel" value="0.4" type="double" />
 
-		<param name="publish_tf" value="false" type="bool" />
+		<param name="publish_tf" value="true" type="bool" />
 		<param name="rotation_from_imu" value="true" type="bool" />
 
 	</node>
