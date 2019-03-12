@@ -3,6 +3,23 @@
 using namespace std;
 using namespace TooN;
 
+Matrix<3> QuatToMat(TooN::Vector<4> Quat){
+	Matrix<3> Rot;
+	double s = Quat[0];
+	double x = Quat[1];
+	double y = Quat[2];
+	double z = Quat[3];
+	Fill(Rot) = 1-2*(y*y+z*z),2*(x*y-s*z),2*(x*z+s*y),
+	2*(x*y+s*z),1-2*(x*x+z*z),2*(y*z-s*x),
+	2*(x*z-s*y),2*(y*z+s*x),1-2*(x*x+y*y);
+	return Rot;
+}
+
+float YawFromMat( Matrix<3> R ) {
+	return atan2(R[1][0],R[0][0]); 
+}
+
+
 //---Get parameters
 void load_param( double & p, double def, string name ) {
 	ros::NodeHandle n_param("~");
@@ -47,12 +64,15 @@ rover_ctrl_interface::rover_ctrl_interface() {
 
   load_param(_max_lin_vel, 0.1, "max_lin_vel");
   load_param(_max_ang_vel, 0.4, "max_ang_vel");
+	load_param(_publish_tf, false, "publish_tf");
+	load_param(_rotation_from_imu, true, "rotation_from_imu");
   
   _cmd_vel_sub = _nh.subscribe("/rover/cmd_vel", 0, &rover_ctrl_interface::c_vel_cb, this );
   _joy_sub = _nh.subscribe("/joy", 0, &rover_ctrl_interface::rc_cb, this );
   _odom_pub = _nh.advertise<nav_msgs::Odometry>("odom", 0);
   _bat_pub = _nh.advertise< std_msgs::Float32 > ("/rover/battery", 0);
-
+	_imu_sub = _nh.subscribe("/imu/data", 0, &rover_ctrl_interface::imu_cb, this);
+	
   _lin_vel = 0.0;
   _ang_vel = 0.0;
   _joy_lin_vel = 0.0;
@@ -73,6 +93,13 @@ void rover_ctrl_interface::c_vel_cb ( geometry_msgs::Twist c_vel ) {
 	_auto_lin_vel = c_vel.linear.x;
 	_auto_ang_vel = c_vel.angular.z;
 	
+}
+
+void rover_ctrl_interface::imu_cb ( const sensor_msgs::ImuConstPtr imu) {
+	//get yaw
+	//cout << YawFromMat( QuatToMat( makeVector(imu->orientation.w, imu->orientation.x, imu->orientation.y, imu->orientation.z ) ) ) << endl;
+	_imu_vth = (fabs(imu->angular_velocity.z) > 0.01) ? imu->angular_velocity.z : 0.0;
+	cout << "_imu_vth: " << _imu_vth << endl;
 }
 
 void rover_ctrl_interface::rc_cb( sensor_msgs::Joy joy ) {
@@ -127,7 +154,8 @@ void rover_ctrl_interface::rover_ctrl() {
       ROS_ERROR("Failed to read the rover speed");
       exit(0);
     }
-		//vth = -vth;
+		
+		if( _rotation_from_imu ) vth = _imu_vth;
     
     
     //---Odometry
@@ -148,7 +176,7 @@ void rover_ctrl_interface::rover_ctrl() {
 
     odom_trans.transform.rotation = odom_quat;
     //send the transform
-    odom_broadcaster.sendTransform(odom_trans);
+    if (_publish_tf) odom_broadcaster.sendTransform(odom_trans);
     //---
 
 		odom.header.stamp = ros::Time::now();
@@ -169,9 +197,8 @@ void rover_ctrl_interface::rover_ctrl() {
 
 		_odom_pub.publish( odom );
 	
-		//cout << "vth: " << vth << endl;
-		//2cout << "Rover position: " << x << ", " << y << " / " << th << endl;
 
+		
 		if ( _rover->readVoltage(EDIFrontRightTrack, timestamp, v_volt.data) != 0 ) {
     	ROS_ERROR("Failed to Read Battery Voltage, Try to Restart the Rover");
   	  exit(0);	
