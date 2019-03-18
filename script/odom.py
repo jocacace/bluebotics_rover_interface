@@ -81,10 +81,11 @@ class get_odom():
             odom.twist.twist.linear.y = vy
             odom.twist.twist.angular.z = self.imu.angular_velocity.z
 
-
+            print yaw
+            #print angles
             self.odometry_pub.publish( odom )     
             if ( self.publish_tf == True ):
-                br.sendTransform( (x, y, 0), (self.imu.orientation.x, self.imu.orientation.y, self.imu.orientation.z, self.imu.orientation.w) , rospy.Time.now(), "odom", "world")
+                br.sendTransform( (x, y, 0), (self.imu.orientation.x, self.imu.orientation.y, self.imu.orientation.z, self.imu.orientation.w) , rospy.Time.now(), "odom", "base_footprint")
 
             r.sleep()
                 
